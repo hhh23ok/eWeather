@@ -1,0 +1,144 @@
+{% extends "main/layout.html" %}
+{% load static %}
+
+{% block title %}
+    12-Day Weather Forecast
+{% endblock %}
+
+{% block content %}
+<section id="hero" class="hero section light-background">
+    <div class="icon-boxes position-relative aos-init aos-animate" data-aos="fade-up" data-aos-delay="200">
+        <div class="container position-relative">
+            <div class="row justify-content-center">
+                <div class="location-search col-md-6 d-flex align-items-center">
+                    <h1>12-Day Weather Forecast {{ location }}</h1>
+                </div>
+
+                <form method="get" action="{% url 'forecast:forecast_days' %}"
+                      class="location-search col-md-6 d-flex align-items-center"
+                      style="margin-bottom: 28px;">
+                    {% csrf_token %}
+
+                     <!-- Save Button -->
+                    <button type="submit"
+                            class="btn btn-sm btn-outline-primary save-btn heart-btn"
+                            data-location="{{ location }}"
+                            formaction="{% url 'main:save_location' %}"
+                            formmethod="post"
+                            style="background-color: transparent; padding: 0; border: none; margin-right: 12px;">
+                        {% csrf_token %}
+
+                        <!-- Check if location is saved -->
+                        {% if location in saved_locations %}
+                            <i class="bi bi-heart-fill"></i> <!-- Filled heart -->
+                        {% else %}
+                            <i class="bi bi-heart"></i> <!-- Empty heart -->
+                        {% endif %}
+                    </button>
+
+                    <input type="text" name="location" placeholder="Enter location" class="form-control me-2" value="{{ location }}">
+
+                    <button type="submit" class="btn btn-primary ms-auto">
+                        Search
+                    </button>
+                </form>
+{#                <form method="get" action="{% url 'forecast:forecast_days' %}" class="location-search col-md-6 d-flex align-items-center">#}
+{#                    <input type="text" name="location" placeholder="Enter location" class="form-control me-2" value="{{ location }}">#}
+{#                    <button type="submit" class="btn btn-primary ms-auto">Search</button>#}
+{#                </form>#}
+            </div>
+            {% if forecast_data %}
+            <div class="row gy-4 mt-5">
+                {% for day in forecast_data %}
+                <div class="col-xl-3 col-md-6">
+                    <div class="icon-box">
+                        <div class="icon">
+                            <i class="{{ day.icon }}"></i>
+                        </div>
+                        <h4 class="title"> <a href="#" class="stretched-link">{{ day.date }}</a> </h4>
+                        <ul>
+                            <p><strong>Temp:</strong> {{ day.tempmin }}/{{ day.tempmax }}°C</p>
+                            <p><strong>Wind Speed:</strong> {{ day.windspeed }} km/h</p>
+                            <p><strong>Wind Gust:</strong> {{ day.windgust }} km/h</p>
+                            <p><strong>Precipitation Probability:</strong> {{ day.precipprob }}%</p>
+                            <p><strong>Humidity:</strong> {{ day.humidity }}%</p>
+                            <p><strong>UV Index:</strong> {{ day.uvindex }}</p>
+                            <p><strong>Sunrise:</strong> {{ day.sunrise }}</p>
+                            <p><strong>Sunset:</strong> {{ day.sunset }}</p>
+                        </ul>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+
+            {% if chart_data %}
+                <div class="chart-container mb-4" style="margin: 40px; border-radius: 10px; background-color: #fff;">
+                    <canvas id="weatherChart"></canvas>
+                </div>
+                <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+                <script>
+                    // Pass chart_data to JavaScript
+                    var chartData = {{ chart_data|safe }};
+
+                    document.addEventListener('DOMContentLoaded', function() {
+                        const ctx = document.getElementById('weatherChart').getContext('2d');
+
+                        // Ensure chartData is not undefined or null before proceeding
+                        if (typeof chartData !== 'undefined' && chartData !== null && chartData.dates && chartData.dates.length > 0) {
+                            new Chart(ctx, {
+                                type: 'line',
+                                data: {
+                                    labels: chartData.dates,
+                                    datasets: [{
+                                        label: 'Max Temp (°C)',
+                                        data: chartData.temp_max,
+                                        borderColor: 'rgba(255, 99, 132, 1)',
+                                        borderWidth: 1,
+                                        fill: false
+                                    }, {
+                                        label: 'Min Temp (°C)',
+                                        data: chartData.temp_min,
+                                        borderColor: 'rgba(54, 162, 235, 1)',
+                                        borderWidth: 1,
+                                        fill: false
+                                    }]
+                                },
+                                options: {
+                                    scales: {
+                                        x: {
+                                            type: 'category',
+                                            title: {
+                                                display: true,
+                                                text: 'Date'
+                                            }
+                                        },
+                                        y: {
+                                            beginAtZero: false,
+                                            title: {
+                                                display: true,
+                                                text: 'Temperature (°C)'
+                                            }
+                                        }
+                                    }
+                                }
+                            });
+                        } else {
+                            console.warn('No valid chart data available.');
+                        }
+                    });
+                </script>
+            {% endif %}
+
+            {% else %}
+                <div class="row justify-content-center">
+                    <div class="col-md-6 alert text-center"
+                         style="height: 45vh;
+                         display: flex; justify-content: center; align-items: center; font-size: 1.2rem;">
+                        <p>Incorrect name, location not found. No forecast data available. Please try again.</p>
+                    </div>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</section>
+{% endblock %}
