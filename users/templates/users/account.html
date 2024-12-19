@@ -1,0 +1,102 @@
+{% extends "main/layout.html" %}
+{% load crispy_forms_filters %}
+{% load crispy_forms_tags %}
+
+{% block title %}
+    Account page
+{% endblock %}
+
+{% block content %}
+    <section id="features" class="features section light-background">
+        <section id="pricing" class="pricing section">
+            <div class="container section-title aos-init aos-animate" data-aos="fade-up">
+                    <!-- Section Title -->
+                <div class="container section-title aos-init aos-animate" data-aos="fade-up">
+                    <div>
+                        <span class="description-title">Account</span>
+                        <span>Information</span>
+                    </div>
+                </div>
+
+                <p><strong>Username:</strong> {{ user_info.username }}</p>
+                <p><strong>Email:</strong> {{ user_info.email }}</p>
+
+                <h3>Telegram Integration</h3>
+
+                {% if not is_bot_user %}
+                    <p>Please enter your Telegram username to get the forecast from the bot:</p>
+
+                    <form method="post" class="mb-4 styled-form">
+
+                        {% csrf_token %}
+
+                        <div class="form-group">
+                            {{ form.username.label_tag }}
+                            {{ form.username }}
+                        </div>
+
+                        <button type="submit" class="btn btn-primary styled-btn">
+                            Update Telegram Username
+                        </button>
+
+                    </form>
+                {% else %}
+                    <p>Connect to the bot by using `/start` command!</p>
+                    <a href="{{ bot_link }}" class="btn btn-success styled-btn" target="_blank">Go to the Bot</a>
+                {% endif %}
+            </div>
+        </section>
+
+        <!-- Section Title -->
+        <div class="container section-title aos-init aos-animate" data-aos="fade-up">
+            <div><span>Check saved</span> <span class="description-title">Locations</span></div>
+        </div><!-- End Section Title -->
+
+        <div class="container">
+            <div class="row gy-5 justify-content-between">
+                <div class="row align-self-center gy-4">
+
+                    {% for location in saved_locations %}
+                        <div class="col-md-6 aos-init aos-animate narrow-feature" data-aos="fade-up" data-aos-delay="200">
+                            <div class="feature-box d-flex align-items-center">
+                                <!-- Add delete button with trash icon -->
+                                <form method="post" action="{% url 'users:location_delete' location.id %}" style="display: inline;">
+                                    {% csrf_token %}
+                                    <button type="submit"
+                                    style="background-color: transparent; padding: 0; border: none">
+                                        <i class="bi bi-trash-fill"></i>
+                                    </button>
+                                </form>
+
+                                <h3>
+                                    <a href="{% url 'forecast:forecast_days' %}?location={{ location.city }}">
+                                        {{ location.city }}
+                                    </a>
+                                </h3>
+
+                            </div>
+                        </div>
+                    {% endfor %}
+
+                    <!-- The "+" item -->
+                    <div class="col-md-6 aos-init aos-animate narrow-feature" data-aos="fade-up" data-aos-delay="500">
+                        <div class="feature-box d-flex align-items-center">
+                            <i class="bi bi-check"></i>
+                            <a href="{% url 'main:index' %}" class="add-more-link">Add more</a>
+                        </div>
+                    </div>
+                    <!-- End "+" Feature Item -->
+                </div>
+                            <!-- a form to handle logout -->
+                <div class="logout-section">
+                    <form method="post" action="{% url 'account_logout' %}">
+                        {% csrf_token %}
+                        <button type="submit" class="btn btn-danger styled-btn">Logout</button>
+                    </form>
+                </div>
+
+            </div>
+        </div>
+    </section>
+
+{% endblock %}
