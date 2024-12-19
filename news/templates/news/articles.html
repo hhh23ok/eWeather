@@ -1,0 +1,52 @@
+{% extends "main/layout.html" %}
+
+{% block title %}
+    Articles - {{ location }}
+{% endblock %}
+
+{% block content %}
+<section id="pricing" class="pricing section">
+    <div class="container">
+        {% if error %}
+        <p>{{ error }}</p>
+        {% else %}
+        {% for article in page_obj %}
+        <div class="news-item narrow-container">
+            <h3>{{ article.title }}</h3>
+            <span>{{ article.date }}</span>
+            <p>{{ article.summary }}</p>
+            <div class="button-container">
+                <a href="{{ article.url }}" class="btn-buy" target="_blank">
+                    Read More
+                </a>
+            </div>
+        </div>
+        {% empty %}
+        <p>No news articles found.</p>
+        {% endfor %}
+        {% endif %}
+
+        <!-- Pagination -->
+        <div class="container section-title aos-init aos-animate" data-aos="fade-up">
+            <div class="pagination">
+                <span class="step-links">
+                    {% if page_obj.has_previous %}
+                    <a href="?page=1" class="btn-pagination">First</a>
+                    <a href="?page={{ page_obj.previous_page_number }}" class="btn-pagination">Previous</a>
+                    {% endif %}
+
+                    <span class="current">
+                        Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}.
+                    </span>
+
+                    {% if page_obj.has_next %}
+                    <a href="?page={{ page_obj.next_page_number }}" class="btn-pagination">Next</a>
+                    <a href="?page={{ page_obj.paginator.num_pages }}" class="btn-pagination">Last</a>
+                    {% endif %}
+                </span>
+            </div>
+        </div>
+
+    </div>
+</section>
+{% endblock %}
